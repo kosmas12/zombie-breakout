@@ -47,9 +47,14 @@
 #define FIELD_X GAME_W - BULLET_S * 2
 #define STEP_Y 6
 
-#define WINDOW_W 640
-#define WINDOW_H 480
+#define WINDOW_W GAME_W
+#define WINDOW_H GAME_H
+#if __EMSCRIPTEN__
 #define RECORDS_FILE "IDBFS/records.bin"
+#else
+#define RECORDS_FILE "records.bin"
+#endif
+
 
 typedef struct _TEXT_TEXTURE {
   SDL_Texture *txtText;
