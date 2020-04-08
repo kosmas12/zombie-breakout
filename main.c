@@ -700,7 +700,7 @@ void syncRecords() {
 void listRecords() {
   int i;
   RECORD records[5];
-  FILE *file = fopen("IDBFS/records.bin","rb");
+  FILE *file;
   int empty = 1;
   char entry[50];
   int textY = GAME_H / 4;
@@ -708,7 +708,8 @@ void listRecords() {
   scrnText = createEmptySprite(SPRITE_W, GAME_H);
   renderXCenteredText(font42, "TOP RANKINGS", textY - 42 * 2);
 
-  if(file) {
+  file = fopen("IDBFS/records.bin","rb");
+  if(file != NULL) {
     fread(records, sizeof(RECORD), 5, file);
     for (i = 0; i < 5; i++) {
       if (records[i].points > 0) {
@@ -719,7 +720,6 @@ void listRecords() {
       }
     }
     fclose(file);
-    syncRecords();
   }
 
   if (empty) {
