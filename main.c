@@ -88,7 +88,7 @@ typedef struct _RECORD {
 int gQuit = 0;
 int mouseSupport = 1;
 int gPoints;
-char pointsText[10];
+char pointsText[12];
 char bulletsText[9];
 int gSoundCondition = 1;
 int gMusicCondition = 1;
