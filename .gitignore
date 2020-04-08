@@ -2,7 +2,4 @@
 *.o
 
 # Executables
-*.exe
-
-# Binaries
-*.bin
+zombie-breakout
