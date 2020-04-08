@@ -729,7 +729,7 @@ void listRecords() {
 }
 
 void setRank() {
-  FILE *file = fopen("IDBFS/records.bin", "rb");
+  FILE *file;
   RECORD player;
   RECORD records[5];
   RECORD aux;
@@ -753,35 +753,37 @@ void setRank() {
 
   player.points = gPoints;
 
-  if(file == 0) {
-    file = fopen("IDBFS/records.bin", "wb");
-    if (player.points) {
-      records[0] = player;
-      for (i = 1; i < 5; i++) {
-        records[i] = (RECORD){0};
-      }
-    }
-  }
-  else {
+  // Read records file
+  file = fopen("IDBFS/records.bin", "rb");
+  if(file != NULL) {
     fread(records, sizeof(RECORD), 5, file);
     fclose(file);
-    file = fopen("IDBFS/records.bin", "wb");
-    /* Searches for values in the top 5 ranks that are lower than the
-     the new player score. */
-    if (player.points > records[4].points) {
-      records[4] = player;
-      for (i = 4; i > 0; i--) {
-        if (records[i].points > records[i - 1].points) {
-          aux = records[i];
-          records[i] = records[i - 1];
-          records[i - 1] = aux;
-        }
+  } else {
+    for (i = 0; i < 5; i++) {
+      records[i] = (RECORD){0};
+    }
+  }
+
+  /* Searches for values in the top 5 ranks that are lower than the
+   the new player score. */
+  if (player.points > records[4].points) {
+    records[4] = player;
+    for (i = 4; i > 0; i--) {
+      if (records[i].points > records[i - 1].points) {
+        aux = records[i];
+        records[i] = records[i - 1];
+        records[i - 1] = aux;
       }
     }
   }
-  
-  fwrite(records, sizeof(RECORD), 5, file);
-  fclose(file);
+
+  // Write records file
+  file = fopen("IDBFS/records.bin", "wb");
+  if(file != NULL) {  
+    fwrite(records, sizeof(RECORD), 5, file);
+    fclose(file);
+  }
+
   syncRecords();
 }
 
