@@ -517,55 +517,49 @@ void moveHero(OBJECT *p) {
 }
 
 int init() {
-  /*Initialization flag*/
-  int success = 1;
 
+  // Initialize randomizer
   srand(time(NULL));
+
+  // Initialize audio
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
   Mix_AllocateChannels(16);
 
+  // Initialize font library
   if (TTF_Init() == -1) {
     printf("TTF unable to initialize! Error: %s\n", TTF_GetError());
-    success = 0;
+    return 0;
   }
 
-  /*Initialize SDL*/
+  // Initialize SDL
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-    success = 0;
-  } else {
-    /*Create window*/
-    window = SDL_CreateWindow("Zombie Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
-      printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
-      success = 0;
-    } else {
-      // Create renderer for window
-      renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-      if (renderer == NULL) {
-        printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
-        success = 0;
-      } else {
-
-        // Initialize PNG loading
-        int imgFlags = IMG_INIT_PNG;
-        if (!(IMG_Init(imgFlags) & imgFlags)) {
-          printf("SDL_image could not initialize! SDL_image Error: %s\n",
-                 IMG_GetError());
-          success = 0;
-        }
-      }
-
-      /*Initialize JPG and PNG loading */
-      int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
-      if (!(IMG_Init(imgFlags) & imgFlags)) {
-        printf("SDL_image could not initialize! SDL_image Error: %s\n",
-               IMG_GetError());
-        success = 0;
-      }
-    }
+    return 0;
   }
-  return success;
+
+  // Create window
+  window = SDL_CreateWindow("Zombie Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
+  if (window == NULL) {
+    printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+    return 0;
+  }
+
+  // Create renderer for window
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  if (renderer == NULL) {
+    printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+    return 0;
+  }
+
+  // Initialize JPG and PNG loading
+  int imgFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+  if (!(IMG_Init(imgFlags) & imgFlags)) {
+    printf("SDL_image could not initialize! SDL_image Error: %s\n",
+           IMG_GetError());
+    return 0;
+  }
+
+  return 1;
 }
 
 SDL_Texture *loadTexture(char *path) {
