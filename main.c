@@ -49,6 +49,7 @@
 
 #define WINDOW_W 640
 #define WINDOW_H 480
+#define RECORDS_FILE "IDBFS/records.bin"
 
 typedef struct _TEXT_TEXTURE {
   SDL_Texture *txtText;
@@ -708,7 +709,7 @@ void listRecords() {
   scrnText = createEmptySprite(SPRITE_W, GAME_H);
   renderXCenteredText(font42, "TOP RANKINGS", textY - 42 * 2);
 
-  file = fopen("IDBFS/records.bin","rb");
+  file = fopen(RECORDS_FILE, "rb");
   if(file != NULL) {
     fread(records, sizeof(RECORD), 5, file);
     for (i = 0; i < 5; i++) {
@@ -754,7 +755,7 @@ void setRank() {
   player.points = gPoints;
 
   // Read records file
-  file = fopen("IDBFS/records.bin", "rb");
+  file = fopen(RECORDS_FILE, "rb");
   if(file != NULL) {
     fread(records, sizeof(RECORD), 5, file);
     fclose(file);
@@ -778,7 +779,7 @@ void setRank() {
   }
 
   // Write records file
-  file = fopen("IDBFS/records.bin", "wb");
+  file = fopen(RECORDS_FILE, "wb");
   if(file != NULL) {  
     fwrite(records, sizeof(RECORD), 5, file);
     fclose(file);
