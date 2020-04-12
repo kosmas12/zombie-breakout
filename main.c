@@ -316,6 +316,8 @@ void drawEnemy(ENEMY *block) {
 void setTextTexture(TEXT_TEXTURE *txtText, TTF_Font *font, char *text) {
   // Render text surface
   SDL_Surface *textSurface = TTF_RenderText_Solid(font, text, textColor);
+  // Temp hack so it boots on Xbox
+  if(txtText->txtText != NULL)
   SDL_DestroyTexture(txtText->txtText);
   // Create texture from surface pixels
   txtText->txtText = SDL_CreateTextureFromSurface(renderer, textSurface);
@@ -340,6 +342,8 @@ void updateBullets(int n) {
 }
 
 void setZombieTextTexture(ENEMY *block) {
+  // Temp hack so it boots on Xbox
+  if(block->textTexture != NULL)
   SDL_DestroyTexture(block->textTexture);
   sprintf(block->lifeLabel, "%d", block->resistance);
   SDL_Surface *textSurface = TTF_RenderText_Solid(font20, block->lifeLabel, textColor);
