@@ -2,17 +2,21 @@
 
 #define VIRTUAL_CURSOR
 
+#if defined(NXDK)
+#include <hal/debug.h>
+#include <hal/video.h>
+#endif
 #include <stdio.h>
 #include <time.h>
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
+#include "SDL.h"
+#include "SDL_image.h"
 
 #if __EMSCRIPTEN__
   #include <emscripten.h>
   #include <SDL/SDL_ttf.h>
   #include <SDL/SDL_mixer.h>
 #else
-  #include "SDL2/SDL_ttf.h"
+  #include "SDL_ttf.h"
   #include <SDL2/SDL_mixer.h>
 #endif
 
@@ -56,6 +60,10 @@
 #define RECORDS_FILE "IDBFS/records.bin"
 #else
 #define RECORDS_FILE "records.bin"
+#endif
+
+#if defined(NXDK)
+#define printf(...) debugPrint(__VA_ARGS__)
 #endif
 
 
@@ -594,7 +602,7 @@ int init() {
   }
 
   // Create window
-  window = SDL_CreateWindow("Zombie Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
+  window = SDL_CreateWindow("Zombie Breakout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
   if (window == NULL) {
     printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
     return 0;
@@ -604,7 +612,7 @@ int init() {
 #endif
 
   // Create renderer for window
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
   if (renderer == NULL) {
     printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
     return 0;
@@ -1451,6 +1459,8 @@ void loop() {
 }
 
 int main() {
+  XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
+
   /* Start up SDL and create window */
   if (!init()) {
     printf("SDL could not be initialized\n");
