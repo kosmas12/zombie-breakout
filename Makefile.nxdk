@@ -3,4 +3,14 @@ GEN_XISO = $(XBE_TITLE).iso
 SRCS += $(wildcard $(CURDIR)/*.c)
 NXDK_DIR = $(CURDIR)/../..
 NXDK_SDL = y
+
+all_local: data all
+
 include $(NXDK_DIR)/Makefile
+
+data:
+	@mkdir -p $(OUTPUT_DIR)
+	cp -r assets/ $(OUTPUT_DIR)/
+	cp -r sounds/ $(OUTPUT_DIR)/
+	cp LICENSE $(OUTPUT_DIR)/
+
