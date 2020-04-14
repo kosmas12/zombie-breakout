@@ -1,3 +1,4 @@
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 #include <stdio.h>
 #include <time.h>
@@ -120,9 +121,10 @@ SDL_Window *window = NULL;
 // The window renderer
 SDL_Renderer *renderer = NULL;
 /* The surface contained by the window */
-/* The surface we'll be displaying the menu */
-SDL_Texture *mainMenu;
-SDL_Texture *gameTitle;
+SDL_Texture *gameTitleLogo;
+SDL_Rect gameTitleLogoRect;
+SDL_Texture *gameTitleTag;
+SDL_Rect gameTitleTagRect;
 /* Current displayed bullet image */
 SDL_Texture *gHandSurface = NULL;
 /* block' surface */
@@ -161,7 +163,6 @@ TEXT_TEXTURE txtText1;
 TEXT_TEXTURE txtText2;
 TEXT_TEXTURE txtText3;
 SDL_Texture *scrnText;
-SDL_Texture *btnsText;
 SDL_Texture *sndOnText;
 SDL_Texture *mscOffText;
 // The color of the font
@@ -181,13 +182,29 @@ SDL_Rect dstBg1 = {0, 0, BG_W, GAME_H};
 SDL_Rect dstBg2 = {BG_W, 0, BG_W, GAME_H};
 SDL_Rect bubbleDstRect = {0, 0, GAME_W, GAME_H};
 
-SDL_Rect playDstRect = {GAME_W / 2 - 68 / 2, 446, 68, 68};
-SDL_Rect exitDstRect = {214, 463, BUTTON_S, BUTTON_S};
-SDL_Rect sndDstRect = {292, 463, BUTTON_S, BUTTON_S};
-SDL_Rect mscDstRect = {368, 463, BUTTON_S, BUTTON_S};
-SDL_Rect recordsDstRect = {548, 463, BUTTON_S, BUTTON_S};
-SDL_Rect marketDstRect = {624, 463, BUTTON_S, BUTTON_S};
-SDL_Rect helpDstRect = {700, 463, BUTTON_S, BUTTON_S};
+typedef struct _MENU_ITEM {
+  const char *name;
+  SDL_Rect *rect;
+  SDL_Texture *texture;
+} MENU_ITEM;
+
+SDL_Rect exitDstRect;
+SDL_Rect sndDstRect;
+SDL_Rect mscDstRect;
+SDL_Rect playDstRect;
+SDL_Rect recordsDstRect;
+SDL_Rect marketDstRect;
+SDL_Rect helpDstRect;
+
+MENU_ITEM menu_items[] = {
+  {"exit", &exitDstRect},
+  {"snd", &sndDstRect},
+  {"msc", &mscDstRect},
+  {"play", &playDstRect},
+  {"records", &recordsDstRect},
+  {"market", &marketDstRect},
+  {"help", &helpDstRect},
+};
 
 int i, hitAreaY;
 int walk = 0;
@@ -446,6 +463,25 @@ void drawSprite(int x, int y, int armsSpriteY, int eyesSpriteX, int mouthSpriteX
   SDL_RenderCopy(renderer, zombieHair, &srcRect, &dstRect);
 }
 
+void drawTitle() {
+  SDL_RenderCopy(renderer, gameTitleLogo, NULL, &gameTitleLogoRect);
+  SDL_RenderCopy(renderer, gameTitleTag, NULL, &gameTitleTagRect);
+}
+
+void drawMenu() {
+  for(int i = 0; i < ARRAY_SIZE(menu_items); i++) {
+    MENU_ITEM *item = &menu_items[i];
+    SDL_RenderCopy(renderer, menu_items[i].texture, NULL, item->rect);
+  }
+
+  if (gSoundCondition) {
+    SDL_RenderCopy(renderer, sndOnText, NULL, &sndDstRect);
+  }
+  if (!gMusicCondition) {
+    SDL_RenderCopy(renderer, mscOffText, NULL, &mscDstRect);
+  }
+}
+
 SDL_Texture *createEmptySprite(int w, int h) {
   SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
   SDL_SetRenderTarget(renderer, texture);
@@ -577,7 +613,7 @@ int init() {
   return 1;
 }
 
-SDL_Texture *loadTexture(char *path) {
+SDL_Texture *loadTextureAndGetSize(char *path, SDL_Rect* rect) {
   // The final texture
   SDL_Texture *newTexture = NULL;
 
@@ -587,6 +623,13 @@ SDL_Texture *loadTexture(char *path) {
     printf("Unable to load image %s! SDL_image Error: %s\n", path,
            IMG_GetError());
   } else {
+
+    // Get size if requested
+    if (rect != NULL) {
+      rect->w = loadedSurface->w;
+      rect->h = loadedSurface->h;
+    }
+
     // Create texture from surface pixels
     newTexture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
     if (newTexture == NULL) {
@@ -599,6 +642,10 @@ SDL_Texture *loadTexture(char *path) {
   }
 
   return newTexture;
+}
+
+SDL_Texture *loadTexture(char *path) {
+  return loadTextureAndGetSize(path, NULL);
 }
 
 Mix_Chunk *loadWAV(const char *filepath) {
@@ -619,9 +666,42 @@ Mix_Chunk *loadWAV(const char *filepath) {
 }
 
 void loadMedia() {
-  /* Load menu surface */
-  mainMenu = loadTexture("./assets/images/menu-11-menu.png");
-  gameTitle = loadTexture("assets/images/menu-11-title.png");
+  /* Load menu surfaces */
+  for(int i = 0; i < ARRAY_SIZE(menu_items); i++) {
+    MENU_ITEM *item = &menu_items[i];
+
+    /* Load texture */
+    char path[100];
+    sprintf(path, "./assets/images/menu-11-menu-%s.png", item->name);
+    item->texture = loadTextureAndGetSize(path, item->rect);
+
+    /* Calculate placement */
+    if (i == 0) {
+      item->rect->x = 0;
+    } else {
+      MENU_ITEM *previous_item = &menu_items[i-1];
+      item->rect->x = previous_item->rect->x + previous_item->rect->w + 28;
+    }
+    item->rect->y = 515 - item->rect->h;
+  }
+
+  /* Center the menu */
+  MENU_ITEM *last_item = &menu_items[ARRAY_SIZE(menu_items) - 1];
+  int menu_width = last_item->rect->x + last_item->rect->w;
+  for(int i = 0; i < ARRAY_SIZE(menu_items); i++) {
+    MENU_ITEM *item = &menu_items[i];
+    item->rect->x += GAME_W/2 - menu_width/2;
+  }
+
+  gameTitleLogo = loadTextureAndGetSize("assets/images/menu-11-title-logo.png", &gameTitleLogoRect);
+  gameTitleTag = loadTextureAndGetSize("assets/images/menu-11-title-tag.png", &gameTitleTagRect);
+
+  /* Position the logos */
+  gameTitleLogoRect.x = GAME_W/2 - gameTitleLogoRect.w/2;
+  gameTitleLogoRect.y = 86;
+  gameTitleTagRect.x = GAME_W/2 - gameTitleTagRect.w/2;
+  gameTitleTagRect.y = 284;
+
   pauseButton = loadTexture("assets/images/menu-11-pause.png");
   sndOnText = loadTexture("assets/images/menu-11-sound-on.png");
   mscOffText = loadTexture("assets/images/menu-11-music-off.png");
@@ -796,25 +876,12 @@ void setRank() {
   syncRecords();
 }
 
-void updateMenuTexture() {
-  btnsText = createEmptySprite(SPRITE_W, GAME_H);
-  if (gSoundCondition) {
-    SDL_RenderCopy(renderer, sndOnText, NULL, NULL);
-  }
-  if (!gMusicCondition) {
-    SDL_RenderCopy(renderer, mscOffText, NULL, NULL);
-  }
-  SDL_SetRenderTarget(renderer, canvas);
-}
-
 void switchSound() {
   gSoundCondition = !gSoundCondition;
-  updateMenuTexture();
 }
 
 void switchMusic() {
   gMusicCondition = !gMusicCondition;
-  updateMenuTexture();
 }
 
 int clickButton(SDL_Event e, SDL_Rect button) {
@@ -901,7 +968,6 @@ void reset() {
   scrnText = NULL;
 
   updatePoints(gPoints);
-  updateMenuTexture();
   updateBullets(1);
 
   for (i = 0; i < ROWS - 1; i++) {
@@ -1298,13 +1364,11 @@ void tick() {
   if (scrnText) {
     SDL_RenderCopy(renderer, scrnText, NULL, NULL);
     if (gameFrame > RESET_FRAME) {
-      SDL_RenderCopy(renderer, mainMenu, NULL, NULL);
-      SDL_RenderCopy(renderer, btnsText, NULL, NULL);
+      drawMenu();
     }
   } else if (hasGameStarted == 0) {
-    SDL_RenderCopy(renderer, gameTitle, NULL, NULL);
-    SDL_RenderCopy(renderer, mainMenu, NULL, NULL);
-    SDL_RenderCopy(renderer, btnsText, NULL, NULL);
+    drawTitle();
+    drawMenu();
   } else {
     SDL_RenderCopy(renderer, txtText1.txtText, NULL, &txtText1.txtDstRect);
     SDL_RenderCopy(renderer, txtText2.txtText, NULL, &txtText2.txtDstRect);
@@ -1312,10 +1376,9 @@ void tick() {
     bulletRect.y = bulletIconY;
     SDL_RenderFillRect(renderer, &bulletRect);
     if (gPausedGame) {
-      SDL_RenderCopy(renderer, mainMenu, NULL, NULL);
-      SDL_RenderCopy(renderer, btnsText, NULL, NULL);
+      drawMenu();
     } else {
-      SDL_RenderCopy(renderer, pauseButton, NULL, NULL);
+      SDL_RenderCopy(renderer, pauseButton, NULL, &dstPauseButton);
     }
   }
 
