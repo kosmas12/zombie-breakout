@@ -450,6 +450,9 @@ SDL_Texture *createEmptySprite(int w, int h) {
   SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
   SDL_SetRenderTarget(renderer, texture);
 
+  SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+  SDL_RenderClear(renderer);
+
   // will make pixels with alpha 0 fully transparent
   // use SDL_SetTextureBlendMode . Not SDL_SetRenderDrawBlendMode
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
