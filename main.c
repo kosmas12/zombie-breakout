@@ -1,5 +1,7 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
+#define VIRTUAL_CURSOR
+
 #include <stdio.h>
 #include <time.h>
 #include "SDL2/SDL.h"
@@ -167,6 +169,11 @@ SDL_Texture *sndOnText;
 SDL_Texture *mscOffText;
 // The color of the font
 SDL_Color textColor = {255, 255, 255, 255};
+
+#ifdef VIRTUAL_CURSOR
+SDL_Rect dstCrosshair;
+SDL_Texture *crosshair;
+#endif
 
 
 OBJECT *bullet;
@@ -592,6 +599,9 @@ int init() {
     printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
     return 0;
   }
+#ifdef VIRTUAL_CURSOR
+  SDL_ShowCursor(SDL_DISABLE);
+#endif
 
   // Create renderer for window
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -725,6 +735,11 @@ void loadMedia() {
   zombieEyes = loadTexture("assets/images/zombie-eyes-3.png");
   zombieArms = loadTexture("assets/images/zombie-arms-2.png");
   zombieMouth = loadTexture("assets/images/zombie-mouth-2.png");
+
+#ifdef VIRTUAL_CURSOR
+  /* load mouse cursor */
+  crosshair = loadTextureAndGetSize("assets/images/crosshair.png", &dstCrosshair);
+#endif
 
   /*load sounds */
   hitSound = loadWAV("assets/sounds/hit.ogg");
@@ -1079,15 +1094,17 @@ void handleButtons() {
       }
       break;
     case SDL_FINGERMOTION:
+      interpolateFinger();
       if (isMouseDown && gameFrame > -1 && gameFrame < 3) {
-        interpolateFinger();
         setAngle();
       }
       break;
     case SDL_MOUSEMOTION:
-      if (mouseSupport && isMouseDown && gameFrame > -1 && gameFrame < 3) {
+      if(mouseSupport) {
         interpolateMouse();
-        setAngle();
+        if(isMouseDown && gameFrame > -1 && gameFrame < 3) {
+          setAngle();
+        }
       }
       break;
   }
@@ -1383,6 +1400,12 @@ void tick() {
       SDL_RenderCopy(renderer, pauseButton, NULL, &dstPauseButton);
     }
   }
+
+#ifdef VIRTUAL_CURSOR
+  dstCrosshair.x = mouseX - dstCrosshair.w/2;
+  dstCrosshair.y = mouseY - dstCrosshair.h/2;
+  SDL_RenderCopy(renderer, crosshair, NULL, &dstCrosshair);
+#endif
 
   SDL_RenderPresent(renderer);
 }
