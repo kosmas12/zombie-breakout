@@ -180,7 +180,8 @@ SDL_Rect bulletRect = {0, 0, BULLET_S, BULLET_S};
 SDL_Rect warningDstRects[COLUMNS];
 SDL_Rect dstBg1 = {0, 0, BG_W, GAME_H};
 SDL_Rect dstBg2 = {BG_W, 0, BG_W, GAME_H};
-SDL_Rect bubbleDstRect = {0, 0, GAME_W, GAME_H};
+SDL_Rect bubbleDstRect = {0, 0, 163, 40};
+SDL_Rect bubbleSrcRect = {0, 0, 163, 40};
 
 typedef struct _MENU_ITEM {
   const char *name;
@@ -242,7 +243,7 @@ void drawCharacter() {
   }
   if (gameFrame < RESET_FRAME) {
     SDL_RenderCopyEx(renderer, heroText, &srcRect, &dstRect, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(renderer, runBubble, NULL, &bubbleDstRect, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, runBubble, &bubbleSrcRect, &bubbleDstRect, 0, NULL, SDL_FLIP_HORIZONTAL);
   } else {
     SDL_RenderCopy(renderer, heroText, &srcRect, &dstRect);
   }
@@ -1105,7 +1106,8 @@ void printFps() {
 void tick() {
   int i, j;
   ENEMY enemy;
-  bubbleDstRect = (SDL_Rect){0, hero.posY, GAME_W, GAME_H};
+  bubbleDstRect.x = 0;
+  bubbleDstRect.y = hero.posY;
 
   //printFps();
 
@@ -1151,11 +1153,11 @@ void tick() {
     if(gameFrame > RESET_FRAME) {
       if(firstRow == 2) {
         SDL_SetRenderDrawColor(renderer, 255, 153, 0, warningAlpha);
-        SDL_RenderCopy(renderer, skullBubble, NULL, &bubbleDstRect);
+        SDL_RenderCopy(renderer, skullBubble, &bubbleSrcRect, &bubbleDstRect);
       }
       else {
         SDL_SetRenderDrawColor(renderer, 255, 255, 0, warningAlpha);
-        SDL_RenderCopy(renderer, warningBubble, NULL, &bubbleDstRect);
+        SDL_RenderCopy(renderer, warningBubble, &bubbleSrcRect, &bubbleDstRect);
       }
       if(warningFrame == 96) {
         firstRow = warningFrame = 0;
@@ -1290,7 +1292,7 @@ void tick() {
         dstBg2.x += 6;
         hero.posX += 6;
         handDstRect.x = hero.posX - 65;
-        bubbleDstRect.x = handDstRect.x - 800;
+        bubbleDstRect.x = handDstRect.x - 3;
 
         for (i = 2; i < ROWS; i++) {
           for (j = 0; j < COLUMNS; j++) {
@@ -1325,7 +1327,7 @@ void tick() {
       } else if (gameFrame < RESET_FRAME) {
         hero.posX -= STEP_Y;
         handDstRect.x = hero.posX - 65;
-        bubbleDstRect.x = handDstRect.x - 800;
+        bubbleDstRect.x = handDstRect.x - 3;
       } else if (gameFrame == RESET_FRAME) {
         reset();
         return;
