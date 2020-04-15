@@ -128,7 +128,7 @@ SDL_Rect gameTitleTagRect;
 /* Current displayed bullet image */
 SDL_Texture *gHandSurface = NULL;
 /* block' surface */
-SDL_Texture *canvas;
+SDL_Texture * const canvas = NULL;
 SDL_Texture *zombieLegs;
 SDL_Texture *zombiePants;
 SDL_Texture *zombieBody;
@@ -741,7 +741,7 @@ void loadMedia() {
   font42 = TTF_OpenFont("assets/images/visitor1.ttf", 42);
 
   createExtraBulletSprite(ENEMY_W * 4, ENEMY_H);
-  canvas = createEmptySprite(GAME_W, GAME_H);
+  SDL_SetRenderTarget(renderer, canvas);
 }
 
 void renderXCenteredText(TTF_Font *font, char string[], int y) {
@@ -1384,8 +1384,6 @@ void tick() {
     }
   }
 
-  SDL_SetRenderTarget(renderer, NULL);
-  SDL_RenderCopy(renderer, canvas, NULL, NULL);
   SDL_RenderPresent(renderer);
 }
 
