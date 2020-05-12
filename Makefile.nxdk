@@ -1,9 +1,9 @@
-XBE_TITLE = ZombieBreakoutX
+XBE_TITLE = ZombieBreakout
 GEN_XISO = $(XBE_TITLE).iso
 SRCS += $(wildcard $(CURDIR)/*.c)
 NXDK_DIR = $(CURDIR)/../..
 NXDK_SDL = y
-
+CFLAGS += -DVIRTUAL_CURSOR
 all_local: data all
 
 include $(NXDK_DIR)/Makefile
