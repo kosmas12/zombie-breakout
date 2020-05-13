@@ -659,6 +659,8 @@ int init() {
             IMG_GetError());
         return 0;
     }
+
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     controller = SDL_GameControllerOpen(0);
     if (controller == NULL) {
         printf("SDL_GameController could not be opened!\n");
