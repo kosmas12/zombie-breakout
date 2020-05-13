@@ -16,9 +16,9 @@
 #else
 #include "SDL_ttf.h"
 #if defined(NXDK)
-#define DISABLE_AUDIO 1
+#define ENABLE_AUDIO 0
 #else
-#define DISABLE_AUDIO 0
+#define ENABLE_AUDIO 1
 #include <SDL_mixer.h>
 #endif
 #endif
@@ -169,7 +169,7 @@ SDL_Texture* runBubble;
 SDL_Texture* heroText;
 SDL_Texture* extraBulletText;
 /*sounds */
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
 Mix_Chunk* hitSound;
 Mix_Chunk* destroySound;
 Mix_Chunk* extraSound;
@@ -368,7 +368,7 @@ void setZombieTextTexture(ENEMY* block) {
     SDL_FreeSurface(textSurface);
 }
 
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
 void playSound(Mix_Chunk* sound) {
     if (gSoundCondition) {
         Mix_PlayChannel(-1, sound, 0);
@@ -400,13 +400,13 @@ void damage(int row, int column) {
             }
         }
         b->time = allDead ? -501 : -99;
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
         playSound(destroySound);
 #endif
     }
     else {
         b->time = 1;
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
         playSound(hitSound);
 #endif
     }
@@ -616,7 +616,7 @@ int init() {
     srand(time(NULL));
 
     // Initialize audio
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
     Mix_AllocateChannels(16);
 #endif
@@ -703,7 +703,7 @@ SDL_Texture* loadTexture(char* path) {
     return loadTextureAndGetSize(path, NULL);
 }
 
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
 Mix_Chunk* loadWAV(const char* filepath) {
     SDL_RWops* fileData = SDL_RWFromFile(filepath, "rb");
     if (!fileData) {
@@ -789,7 +789,7 @@ void loadMedia() {
 #endif
 
     /*load sounds */
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
     hitSound = loadWAV("assets/sounds/hit.ogg");
     destroySound = loadWAV("assets/sounds/destroy.ogg");
     laserSound = loadWAV("assets/sounds/laser.ogg");
@@ -954,7 +954,7 @@ int clickButton(SDL_Event e, SDL_Rect button) {
         mouseY >= button.y && mouseY <= button.y + button.h;
 }
 
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
 void playMusic() {
     if (gMusicCondition) {
         if (Mix_Paused(1)) {
@@ -1118,7 +1118,7 @@ void handleDown() {
             gPausedGame = 1;
             showPaused();
             if (gMusicCondition) {
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
                 Mix_Pause(1);
 #endif
             }
@@ -1136,7 +1136,7 @@ void handleGamepadDown() {
             gPausedGame = 1;
             showPaused();
             if (gMusicCondition) {
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
                 Mix_Pause(1);
 #endif
             }
@@ -1176,13 +1176,13 @@ void handleMotion() {
         scrnText = NULL;
         if (gPausedGame) {
             gPausedGame = 0;
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
             playMusic();
 #endif
         }
         else if (hasGameStarted == 0) {
             hasGameStarted = 1;
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
             playMusic();
 #endif
         }
@@ -1347,7 +1347,7 @@ void tick() {
             }
             if (block[i][j].time == -399) {
                 block[i][j].frame = 3;
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
                 playSound(extraSound);
 #endif
             }
@@ -1388,7 +1388,7 @@ void tick() {
                     bullet->stepY = bulletY;
                     bullet->stepX = bulletX;
                     updateBullets(bulletsLoaded - gameFrame / BULLET_GAP);
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
                     playSound(laserSound);
 #endif
                 }
@@ -1413,7 +1413,7 @@ void tick() {
 #if __EMSCRIPTEN__
                             Mix_HaltChannel(-1);
 #else
-#if !defined(DISABLE_AUDIO)
+#if ENABLE_AUDIO
                             Mix_FadeOutChannel(1, 999 * 2);
 #endif
 #endif
