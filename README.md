@@ -34,6 +34,13 @@ Compiling to native code:
 make clean
 make
 ```
+Compiling for Xbox:
+
+```
+make clean
+make -f Makefile.nxdk
+```
+**NOTE: Compiling this branch (xboxaudio) requires the use of the SDL mixer library, which isn't on upstream nxdk yet. A version of nxdk with SDL mixer can be found here https://github.com/JayFoxRox/nxdk/tree/sdl_mixer**
 
 Porting the game to Emscripten
 
