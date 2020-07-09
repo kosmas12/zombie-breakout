@@ -11,15 +11,15 @@
 
 #if __EMSCRIPTEN__
 #include <emscripten.h>
-#include <SDL/SDL_ttf.h>
-#include <SDL/SDL_mixer.h>
 #else
 #include "SDL_ttf.h"
-#if defined(NXDK)
-#define ENABLE_AUDIO 0
-#else
 #define ENABLE_AUDIO 1
+#if defined (NXDK)
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#else
+#include <SDL/SDL_ttf.h>
+#include <SDL/SDL_mixer.h>
 #endif
 #endif
 
@@ -617,7 +617,7 @@ int init() {
 
     // Initialize audio
 #if ENABLE_AUDIO
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+    Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096);
     Mix_AllocateChannels(16);
 #endif
     // Initialize font library
@@ -731,7 +731,11 @@ void loadMedia() {
 
         /* Load texture */
         char path[100];
+#if defined (NXDK)
+        sprintf(path, "D:\\assets\\images\\menu-11-menu-%s.png", item->name);
+#else
         sprintf(path, "./assets/images/menu-11-menu-%s.png", item->name);
+#endif
         item->texture = loadTextureAndGetSize(path, item->rect);
 
         /* Calculate placement */
@@ -753,8 +757,13 @@ void loadMedia() {
         item->rect->x += GAME_W / 2 - menu_width / 2;
     }
 
+#if defined (NXDK)
+    gameTitleLogo = loadTextureAndGetSize("D:\\assets\\images\\menu-11-title-logo.png", &gameTitleLogoRect);
+    gameTitleTag = loadTextureAndGetSize("D:\\assets\\images\\menu-11-title-tag.png", &gameTitleTagRect);
+#else
     gameTitleLogo = loadTextureAndGetSize("assets/images/menu-11-title-logo.png", &gameTitleLogoRect);
     gameTitleTag = loadTextureAndGetSize("assets/images/menu-11-title-tag.png", &gameTitleTagRect);
+#endif
 
     /* Position the logos */
     gameTitleLogoRect.x = GAME_W / 2 - gameTitleLogoRect.w / 2;
@@ -762,6 +771,29 @@ void loadMedia() {
     gameTitleTagRect.x = GAME_W / 2 - gameTitleTagRect.w / 2;
     gameTitleTagRect.y = 284;
 
+#if defined (NXDK)
+    pauseButton = loadTexture("D:\\assets\\images\\menu-11-pause.png");
+    sndOnText = loadTexture("D:\\assets\\images\\menu-11-sound-on.png");
+    mscOffText = loadTexture("D:\\assets\\images\\menu-11-music-off.png");
+
+    heroText = loadTexture("D:\\assets\\images\\character-8.png");
+    gHandSurface = loadTexture("D:\\assets\\images\\character-hand-2.png");
+    warningBubble = loadTexture("D:\\assets\\images\\warning-3.png");
+    skullBubble = loadTexture("D:\\assets\\images\\danger-3.png");
+    runBubble = loadTexture("D:\\assets\\images\\run-3.png");
+
+    stageBackground = loadTexture("D:\\assets\\images\\zombie-grid-3.png");
+
+    /* load zombie texture */
+    zombieLegs = loadTexture("D:\\assets\\images\\zombie-legs-3.png");
+    zombieHair = loadTexture("D:\\assets\\images\\hair-spritesheet.png");
+    zombiePants = loadTexture("D:\\assets\\images\\zombie-pants-3.png");
+    zombieTorso = loadTexture("D:\\assets\\images\\zombie-torso-2.png");
+    zombieBrows = loadTexture("D:\\assets\\images\\zombie-brows-2.png");
+    zombieEyes = loadTexture("D:\\assets\\images\\zombie-eyes-3.png");
+    zombieArms = loadTexture("D:\\assets\\images\\zombie-arms-2.png");
+    zombieMouth = loadTexture("D:\\assets\\images\\zombie-mouth-2.png");
+#else
     pauseButton = loadTexture("assets/images/menu-11-pause.png");
     sndOnText = loadTexture("assets/images/menu-11-sound-on.png");
     mscOffText = loadTexture("assets/images/menu-11-music-off.png");
@@ -784,26 +816,45 @@ void loadMedia() {
     zombieEyes = loadTexture("assets/images/zombie-eyes-3.png");
     zombieArms = loadTexture("assets/images/zombie-arms-2.png");
     zombieMouth = loadTexture("assets/images/zombie-mouth-2.png");
+#endif
 
 #ifdef VIRTUAL_CURSOR
     /* load mouse cursor */
+#if defined(NXDK)
+crosshair = loadTextureAndGetSize("D:\\assets\\images\\crosshair.png", &dstCrosshair);
+#else
     crosshair = loadTextureAndGetSize("assets/images/crosshair.png", &dstCrosshair);
+#endif
 #endif
 
     /*load sounds */
 #if ENABLE_AUDIO
+#if defined (NXDK)
+    hitSound = loadWAV("D:\\assets\\sounds\\hit.ogg");
+    destroySound = loadWAV("D:\\assets\\sounds\\destroy.ogg");
+    laserSound = loadWAV("D:\\assets\\sounds\\laser.ogg");
+    extraSound = loadWAV("D:\\assets\\sounds\\extra.ogg");
+    gameMusic = loadWAV("D:\\assets\\sounds\\music.ogg");
+#else
     hitSound = loadWAV("assets/sounds/hit.ogg");
     destroySound = loadWAV("assets/sounds/destroy.ogg");
     laserSound = loadWAV("assets/sounds/laser.ogg");
     extraSound = loadWAV("assets/sounds/extra.ogg");
     gameMusic = loadWAV("assets/sounds/music.ogg");
 #endif
+#endif
 
     /*load fonts*/
     // TTF_Font *font;
+#if defined (NXDK)
+    font20 = TTF_OpenFont("D:\\assets\\images\\visitor1.ttf", 20);
+    font28 = TTF_OpenFont("D:\\assets\\images\\visitor1.ttf", 28);
+    font42 = TTF_OpenFont("D:\\assets\\images\\visitor1.ttf", 42);
+#else
     font20 = TTF_OpenFont("assets/images/visitor1.ttf", 20);
     font28 = TTF_OpenFont("assets/images/visitor1.ttf", 28);
     font42 = TTF_OpenFont("assets/images/visitor1.ttf", 42);
+#endif
 
     createExtraBulletSprite(ENEMY_W * 4, ENEMY_H);
     SDL_SetRenderTarget(renderer, canvas);
