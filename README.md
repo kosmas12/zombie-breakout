@@ -35,6 +35,12 @@ make clean
 make
 ```
 
+Compiling for Xbox
+```
+make clean
+make -f Makefile.nxdk
+```
+
 Porting the game to Emscripten
 
 ```
