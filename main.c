@@ -645,13 +645,13 @@ int init() {
 #endif
 
     // Create renderer for window
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) {
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
         return 0;
     }
 
-    // Set reenderer resolution
+    // Set renderer resolution
     SDL_RenderSetLogicalSize(renderer, GAME_W, GAME_H);
 
     // Initialize JPG and PNG loading
