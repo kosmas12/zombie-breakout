@@ -736,6 +736,26 @@ Mix_Chunk* loadWAV(const char* filepath) {
 }
 #endif
 
+void LoadFont(char *path, TTF_Font* font, int size) {
+    char newPath[50] = {'\0'};
+
+    snprintf(newPath, 50, "%s%s", HOME, path);
+
+#if defined(NXDK)
+    for (int i = 0;  i < strlen(newPath); i++) {
+        if (newPath[i] == '/') {
+            newPath[i] = '\\';
+        }
+    }
+#endif
+
+    font = TTF_OpenFont(newPath, size);
+
+    if (font) {
+        printf("Couldn't load font! Reason: %s. Hanging...", TTF_GetError());
+    }
+}
+
 void loadMedia() {
     /* Load menu surfaces */
     for (int i = 0; i < ARRAY_SIZE(menu_items); i++) {
@@ -813,9 +833,9 @@ void loadMedia() {
 
     /*load fonts*/
     // TTF_Font *font;
-    font20 = TTF_OpenFont("assets/images/visitor1.ttf", 20);
-    font28 = TTF_OpenFont("assets/images/visitor1.ttf", 28);
-    font42 = TTF_OpenFont("assets/images/visitor1.ttf", 42);
+    LoadFont("assets/images/visitor1.ttf", font20, 20);
+    LoadFont("assets/images/visitor1.ttf", font28, 28);
+    LoadFont("assets/images/visitor1.ttf", font28, 28);
 
     createExtraBulletSprite(ENEMY_W * 4, ENEMY_H);
     SDL_SetRenderTarget(renderer, canvas);
