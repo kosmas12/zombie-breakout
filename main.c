@@ -16,9 +16,11 @@
 #else
 #include "SDL_ttf.h"
 #if defined(NXDK)
+#define HOME "D:\\"
 #define ENABLE_AUDIO 0
 #else
 #define ENABLE_AUDIO 1
+#define HOME "./"
 #include <SDL_mixer.h>
 #endif
 #endif
@@ -664,7 +666,6 @@ int init() {
     controller = SDL_GameControllerOpen(0);
     if (controller == NULL) {
         printf("SDL_GameController could not be opened!\n");
-        return 0;
     }
     return 1;
 }
@@ -672,11 +673,22 @@ int init() {
 SDL_Texture* loadTextureAndGetSize(char* path, SDL_Rect* rect) {
     // The final texture
     SDL_Texture* newTexture = NULL;
+    char newPath[50] = {'\0'};
+
+    snprintf(newPath, 50, "%s%s", HOME, path);
+
+#if defined(NXDK)
+    for (int i = 0;  i < strlen(newPath); i++) {
+        if (newPath[i] == '/') {
+            newPath[i] = '\\';
+        }
+    }
+#endif
 
     // Load image at specified path
-    SDL_Surface* loadedSurface = IMG_Load(path);
+    SDL_Surface* loadedSurface = IMG_Load(newPath);
     if (loadedSurface == NULL) {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path,
+        printf("Unable to load image %s! SDL_image Error: %s\n", newPath,
             IMG_GetError());
     }
     else {
@@ -731,7 +743,7 @@ void loadMedia() {
 
         /* Load texture */
         char path[100];
-        sprintf(path, "./assets/images/menu-11-menu-%s.png", item->name);
+        sprintf(path, "assets/images/menu-11-menu-%s.png", item->name);
         item->texture = loadTextureAndGetSize(path, item->rect);
 
         /* Calculate placement */
@@ -1626,6 +1638,8 @@ int main() {
     }
     else {
         loadMedia();
+        printf("Loaded assets.");
+        for(;;);
         reset();
         loop();
     }
