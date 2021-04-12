@@ -835,7 +835,7 @@ void loadMedia() {
     // TTF_Font *font;
     LoadFont("assets/images/visitor1.ttf", &font20, 20);
     LoadFont("assets/images/visitor1.ttf", &font28, 28);
-    LoadFont("assets/images/visitor1.ttf", &font28, 28);
+    LoadFont("assets/images/visitor1.ttf", &font42, 42);
     printf("Loaded assets.\n");
 
     createExtraBulletSprite(ENEMY_W * 4, ENEMY_H);
