@@ -5,6 +5,7 @@ NXDK_DIR = $(CURDIR)/../nxdk
 NXDK_SDL = y
 CFLAGS += -DVIRTUAL_CURSOR
 all_local: data all
+NXDK_SDL_MIXER = y
 
 include $(NXDK_DIR)/Makefile
 

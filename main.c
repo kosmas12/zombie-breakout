@@ -3,6 +3,10 @@
 #if defined(NXDK)
 #include <hal/debug.h>
 #include <hal/video.h>
+#include <hal/xbox.h>
+#include <windows.h>
+#include <xboxkrnl/xboxkrnl.h>
+#include <SDL_mixer.h>
 #endif
 #include <stdio.h>
 #include <time.h>
@@ -12,12 +16,11 @@
 #if __EMSCRIPTEN__
 #include <emscripten.h>
 #include <SDL/SDL_ttf.h>
-#include <SDL/SDL_mixer.h>
 #else
 #include "SDL_ttf.h"
 #if defined(NXDK)
 #define HOME "D:\\"
-#define ENABLE_AUDIO 0
+#define ENABLE_AUDIO 1
 #else
 #define ENABLE_AUDIO 1
 #define HOME "./"
@@ -176,7 +179,7 @@ Mix_Chunk* hitSound;
 Mix_Chunk* destroySound;
 Mix_Chunk* extraSound;
 Mix_Chunk* laserSound;
-Mix_Chunk* gameMusic;
+Mix_Music* gameMusic;
 #endif
 /* fonts */
 TTF_Font* font20;
@@ -719,7 +722,19 @@ SDL_Texture* loadTexture(char* path) {
 
 #if ENABLE_AUDIO
 Mix_Chunk* loadWAV(const char* filepath) {
-    SDL_RWops* fileData = SDL_RWFromFile(filepath, "rb");
+    char newPath[50] = {'\0'};
+
+    snprintf(newPath, 50, "%s%s", HOME, filepath);
+
+#if defined(NXDK)
+    for (int i = 0;  i < strlen(newPath); i++) {
+        if (newPath[i] == '/') {
+            newPath[i] = '\\';
+        }
+    }
+#endif
+
+    SDL_RWops* fileData = SDL_RWFromFile(newPath, "rb");
     if (!fileData) {
         printf("SDL_RWFromFile: %s\n", SDL_GetError());
         return NULL;
@@ -756,7 +771,38 @@ void LoadFont(char *path, TTF_Font** font, int size) {
     }
 }
 
+Mix_Music* loadMusic(char *filepath) {
+    char newPath[50] = {'\0'};
+
+    snprintf(newPath, 50, "%s%s", HOME, filepath);
+
+#if defined(NXDK)
+    for (int i = 0;  i < strlen(newPath); i++) {
+        if (newPath[i] == '/') {
+            newPath[i] = '\\';
+        }
+    }
+#endif
+
+    SDL_RWops* fileData = SDL_RWFromFile(newPath, "rb");
+    if (!fileData) {
+        printf("SDL_RWFromFile: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    Mix_Music* music = Mix_LoadMUS_RW(fileData, 1);
+    if (!music) {
+        printf("Mix_LoadMUS_RW: %s\n", Mix_GetError());
+        SDL_FreeRW(fileData);
+        return NULL;
+    }
+
+    return music;
+
+}
+
 void loadMedia() {
+
     /* Load menu surfaces */
     for (int i = 0; i < ARRAY_SIZE(menu_items); i++) {
         MENU_ITEM* item = &menu_items[i];
@@ -828,7 +874,7 @@ void loadMedia() {
     destroySound = loadWAV("assets/sounds/destroy.ogg");
     laserSound = loadWAV("assets/sounds/laser.ogg");
     extraSound = loadWAV("assets/sounds/extra.ogg");
-    gameMusic = loadWAV("assets/sounds/music.ogg");
+    gameMusic = loadMusic("assets/sounds/music.ogg");
 #endif
 
     /*load fonts*/
@@ -992,11 +1038,11 @@ int clickButton(SDL_Event e, SDL_Rect button) {
 #if ENABLE_AUDIO
 void playMusic() {
     if (gMusicCondition) {
-        if (Mix_Paused(1)) {
-            Mix_Resume(1);
+        if (Mix_PausedMusic()) {
+            Mix_ResumeMusic();
         }
         else {
-            Mix_PlayChannel(1, gameMusic, -1);
+            Mix_PlayMusic(gameMusic, -1);
         }
     }
 }
@@ -1449,7 +1495,7 @@ void tick() {
                             Mix_HaltChannel(-1);
 #else
 #if ENABLE_AUDIO
-                            Mix_FadeOutChannel(1, 999 * 2);
+                            Mix_FadeOutMusic(999 * 2);
 #endif
 #endif
                             setRank();
@@ -1618,6 +1664,11 @@ void quit() {
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
+
+#if defined(NXDK)
+    XReboot();
+#endif
+
 }
 
 void loop() {
